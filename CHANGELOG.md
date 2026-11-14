@@ -27,6 +27,9 @@ XeLaTeX toolchain on macOS (2026-08-30) and while isolating CTeX fonts on Debian
 - Linux/Fandol font binding addresses the `.otf` files instead of the family name: on Ubuntu's TeX
   Live, `\setCJKmainfont{FandolSong-Regular}` is not found while `FandolSong-Regular.otf` is. Found
   by the first CI run, recorded in `references/verified-matrix.md`.
+- Debian/Ubuntu install list now includes `texlive-bibtex-extra`: `biblatex.sty` is only a
+  Recommends of `texlive-latex-extra`, so `--no-install-recommends` drops it and the build fails.
+  Found by the second CI run.
 - `.github/workflows/ci.yml` — `static` job (no TeX needed) plus a `tex` job that installs a
   minimal Debian-flavoured toolchain on ubuntu-latest and runs the full test suite, which is also
   the first real verification of the Linux/Fandol path.

@@ -70,6 +70,9 @@ check_sty() { # check_sty <file.sty> <1 if required>
         ok "$1"
     elif [ "$2" = 1 ]; then
         problem "$1 missing  ->  sudo tlmgr install $(echo "$1" | sed 's/\.sty$//')"
+        case "$1" in
+            biblatex.sty) [ "$OS" = Darwin ] || say "      (Debian/Ubuntu: apt install texlive-bibtex-extra)" ;;
+        esac
         fail=1
     else
         warn "$1 missing"

@@ -36,7 +36,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             texlive-xetex texlive-lang-chinese texlive-latex-extra \
-            texlive-science texlive-fonts-recommended latexmk biber
+            texlive-science texlive-fonts-recommended texlive-bibtex-extra \
+            latexmk biber
 
       - name: doctor + cold build + font invariants
         run: bash tests/run-all.sh

@@ -55,9 +55,14 @@ triggers already excludes them.
 sudo apt-get update
 sudo apt-get install --no-install-recommends \
   texlive-xetex texlive-lang-chinese \
-  texlive-latex-extra texlive-science \
+  texlive-latex-extra texlive-bibtex-extra texlive-science \
   texlive-fonts-recommended latexmk biber
 ```
+
+`texlive-bibtex-extra` is where `biblatex.sty` lives on Debian/Ubuntu. It is only a *Recommends*
+of `texlive-latex-extra`, so `--no-install-recommends` drops it and the build fails with
+```File `biblatex.sty' not found```. Measured in CI on ubuntu-latest (2026-11-14). The `biber`
+binary alone is not enough.
 
 Do **not** add unless there is a stated need:
 
