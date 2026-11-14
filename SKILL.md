@@ -87,6 +87,7 @@ scripts/_common.sh           shared POSIX sh helpers (sourced, never run)
 assets/macos/                drop-in CJK font binding for macOS
 assets/example/              bilingual smoke test (math, plot, table, code, biber, cref)
 references/                  macOS setup, Debian isolation, troubleshooting, claim matrix
+docs/ROADMAP.md              what is not automated yet and why (maintainer-facing)
 tests/                       static, Debian-tools and TeX layers; tests/run-all.sh runs all
 ```
 

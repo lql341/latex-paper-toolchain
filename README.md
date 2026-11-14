@@ -61,6 +61,7 @@ scripts/doctor.sh               read-only health check + CJK probe compile
 scripts/cold-build.sh           clean build, log assertions, embedded font list
 scripts/font-audit.sh           font-directory manifest (save / diff / list / show)
 scripts/_common.sh              shared POSIX sh helpers (sourced)
+docs/ROADMAP.md                 maintainer-facing: what is not automated, why, and the manual steps
 assets/macos/                   macos-native-fonts.tex — drop-in \input for ctex documents
 assets/example/                 main.tex + refs.bib — bilingual smoke test used by the tests
 references/                     macos-native-fonts.md · debian-fontconfig.md · troubleshooting.md · verified-matrix.md
@@ -100,6 +101,13 @@ bash tests/run-all.sh --static-only   # no TeX, no apt (safe anywhere)
 Negative cases are part of the suite: a document with a dangling `\ref` must fail the build check,
 and `--expect-font` must fail when the named font is not embedded. A verification script that cannot
 fail is not a verification script.
+
+## Roadmap
+
+[`docs/ROADMAP.md`](docs/ROADMAP.md) lists what is deliberately not automated — Windows/WSL, a real
+BasicTeX build in CI, end-to-end desktop-font verification, the TeX Live 2020 floor — with the
+reason and the exact manual procedure that closes each item. If a claim is not in
+`references/verified-matrix.md`, it is either there or it is not claimed.
 
 ## Honest scope
 

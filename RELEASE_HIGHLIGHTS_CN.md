@@ -1,11 +1,7 @@
 # 发布要点 — latex-paper-toolchain
 
-- `doctor.sh` 改为**先报版本下限**，而不是等你编译时炸：它从已安装的宏包识别 siunitx v3（`\qty`）
-  与 pgfplots 1.18（`compat=1.18`）。自带样例需要 TeX Live ≥ 2021；在 Debian 11 / Ubuntu 20.04 上，
-  旧行为是 `Undefined control sequence \qty`，报错指向文档而不是指向过老的 TeX 安装。
-- 这条下限写进了技能本体、两份 README、troubleshooting（含 siunitx v2 替代写法和上游 `install-tl`
-  路线）以及验证矩阵——并且如实标注"没有 TeX Live 2020 的机器可以实测"。
-- CI 增加 macOS 作业，跑静态层与 Debian 工具层，专抓 `stat`、`sed -i`、`mktemp` 的 BSD/GNU 差异；
-  BasicTeX 仍然只在真机上验证。
-- `install.sh --minimal` 不拷贝 `tests/` 与 `.github/`；`_common.sh` 改为不可执行（它是被 source 的
-  库），静态测试对这两种情况都有断言。
+- 新增 `docs/ROADMAP.md`：列出本仓库**刻意不自动化**的四件事——Windows/WSL、在 CI 里真跑 BasicTeX、
+  在真实 Debian 桌面上做端到端字体验证、确认 TeX Live 2020 下限——每条都写了卡点和可直接照抄的手工步骤。
+- LuaLaTeX（暂不做）与 Intel Mac（缺硬件）也如实记下，而不是悄悄消失。
+- 文档写明了自身生命周期和"文档地图"：哪个文件回答什么问题，条目做完之后结论该搬去哪里。
+- 本次仅文档变更，脚本与行为没有改动。

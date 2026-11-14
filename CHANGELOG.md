@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.1 - 2026-11-14
+
+Documentation only: no script or behaviour changed.
+
+- `docs/ROADMAP.md` — the items that are deliberately not automated, with the blocker and the manual
+  procedure that closes each one: Windows/WSL, a real BasicTeX build on a CI runner, end-to-end
+  desktop-font verification on a real Debian desktop, and confirming the TeX Live 2020 floor.
+  LuaLaTeX and Intel Mac are recorded as declined / blocked instead of silently missing.
+- The file states its own lifecycle (finish an item → record it in `references/verified-matrix.md`,
+  add a CHANGELOG line, delete the item) and a document map, so a new contributor knows which file
+  answers which question.
+- `README`/`README_CN`/`SKILL.md` link to it; the layout sections now include `docs/`.
+
 ## 0.3.0 - 2026-11-14
 
 Portability floor, macOS CI coverage, and install polish.

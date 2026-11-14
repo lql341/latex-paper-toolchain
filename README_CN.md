@@ -58,6 +58,7 @@ scripts/doctor.sh               只读体检 + CJK 探针编译
 scripts/cold-build.sh           冷启动构建、日志断言、嵌入字体清单
 scripts/font-audit.sh           字体目录清单（save / diff / list / show）
 scripts/_common.sh              公共 POSIX sh 函数（被 source）
+docs/ROADMAP.md                 给维护者：哪些不自动化、为什么、手工怎么补
 assets/macos/                   macos-native-fonts.tex —— ctex 文档可直接 \input
 assets/example/                 main.tex + refs.bib —— 冒烟样稿，测试直接用它
 references/                     macos-native-fonts.md · debian-fontconfig.md · troubleshooting.md · verified-matrix.md
@@ -96,6 +97,12 @@ bash tests/run-all.sh --static-only   # 不要 TeX、不要 apt
 
 反例也在测试里：故意留一个悬空 `\ref` 必须让构建检查失败，`--expect-font` 在字体没嵌入时必须失败。
 不会失败的验证脚本不算验证。
+
+## 路线图
+
+[`docs/ROADMAP.md`](docs/ROADMAP.md) 列出"刻意不自动化"的几件事——Windows/WSL、CI 里真跑 BasicTeX、
+桌面字体端到端验证、TeX Live 2020 下限——每条都写了原因和可以照着做的手工步骤。
+凡是没进 `references/verified-matrix.md` 的结论，要么在那里，要么就不该对外声称。
 
 ## 适用范围（别当成通用结论）
 
