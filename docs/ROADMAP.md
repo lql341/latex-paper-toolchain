@@ -117,6 +117,34 @@ expected difference is font family availability (`Songti SC` exists on Intel mac
 `Supplemental` directory layout differs and was never checked on that platform). Record as `M2` if
 one ever shows up.
 
+### R7 — Repository settings: required checks `manual-only`
+
+**Why manual:** branch protection and "required status checks" are repository settings, not files;
+they need admin rights and they change how every contributor (including the maintainer) pushes.
+
+**Current state:** `validate.yml` runs on every push to `main` and on pull requests, and
+`release.yml` only publishes after a successful validation. Nothing *forces* a push to wait for it,
+so a broken commit can land and be fixed in the next one — acceptable for a single maintainer, not
+for a repository with outside pull requests.
+
+**How to close it** (needs the repository admin token):
+
+```bash
+gh api -X PUT repos/lql341/latex-paper-toolchain/branches/main/protection \
+  -F required_status_checks.strict=true \
+  -F 'required_status_checks.contexts[]=static checks' \
+  -F 'required_status_checks.contexts[]=Debian tools (hermetic)' \
+  -F 'required_status_checks.contexts[]=static checks (macOS)' \
+  -F 'required_status_checks.contexts[]=Real XeLaTeX build (installed by the skill itself)' \
+  -F enforce_admins=false \
+  -F required_pull_request_reviews= \
+  -F restrictions=
+```
+
+**Done looks like:** a direct push that fails validation is rejected (or at least visibly blocked for
+pull requests), and this item is deleted. Until then, the release workflow's "is the tag already
+published" check is what keeps the damage local.
+
 ## Document map
 
 | File | Audience | Answers |

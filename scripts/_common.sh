@@ -59,6 +59,14 @@ file_mtime() { # file_mtime <file>
 # Where a platform keeps system and user fonts. TeX Live's own fonts live in TEXMF
 # and must never appear in these directories.
 font_dirs() {
+    if [ -n "${FONT_AUDIT_DIRS:-}" ]; then
+        # Space-separated override (test/CI seam, like LPT_OS_OVERRIDE): lets the
+        # suite run font-audit against a throwaway directory instead of the real
+        # system paths, so "diff detects a change" can actually be tested.
+        # shellcheck disable=SC2086  # word splitting is the point here
+        printf '%s\n' $FONT_AUDIT_DIRS
+        return 0
+    fi
     if is_darwin; then
         printf '%s\n' /System/Library/Fonts /Library/Fonts "$HOME/Library/Fonts"
     else

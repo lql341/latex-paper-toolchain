@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.2 - 2026-11-14
+
+Closes two holes where the suite asserted things it could not actually fail on.
+
+- `font-audit.sh` was only ever exercised in the "unchanged" direction, so its `diff` was never
+  proven to detect anything. A `FONT_AUDIT_DIRS` override (test seam, like `LPT_OS_OVERRIDE`) lets
+  `test-static.sh` run the tool against a throwaway font directory and assert all four outcomes:
+  identical → `UNCHANGED`, modified → `CHANGED`, added → `CHANGED` with the file named, removed →
+  `CHANGED`.
+- `cold-build.sh --png` was never run in CI. `test-tex.sh` now renders a page and fails if the render
+  line is missing, the tool reported a failure, or no file appeared.
+- `docs/ROADMAP.md` gains R7: branch protection and required status checks are repository settings
+  that no file can enforce, with the `gh api` invocation that turns them on.
+
 ## 0.3.1 - 2026-11-14
 
 Documentation only: no script or behaviour changed.

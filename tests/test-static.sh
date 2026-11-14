@@ -182,6 +182,45 @@ else
 fi
 rm -rf "$itmp3"
 
+section "font-audit detects a change, not just equality"
+# Without this, "the font stack was unchanged" is an assertion that cannot fail.
+fa=$(mktemp -d)
+mkdir -p "$fa/fonts"
+printf 'a' >"$fa/fonts/one.ttf"
+export FONT_AUDIT_DIR="$fa/store"
+export FONT_AUDIT_DIRS="$fa/fonts"
+"$REPO/scripts/font-audit.sh" save snap1 >/dev/null 2>&1
+"$REPO/scripts/font-audit.sh" save snap1b >/dev/null 2>&1
+if "$REPO/scripts/font-audit.sh" diff snap1 snap1b >/dev/null 2>&1; then
+    ok "identical snapshots compare as UNCHANGED"
+else
+    bad "identical snapshots were reported as changed"
+fi
+printf 'b' >>"$fa/fonts/one.ttf"
+"$REPO/scripts/font-audit.sh" save snap2 >/dev/null 2>&1
+if "$REPO/scripts/font-audit.sh" diff snap1 snap2 >"$fa/d1.txt" 2>&1; then
+    bad "a modified font file compared as UNCHANGED"
+else
+    ok "a modified font file compares as CHANGED"
+fi
+printf 'c' >"$fa/fonts/two.ttf"
+"$REPO/scripts/font-audit.sh" save snap3 >/dev/null 2>&1
+if "$REPO/scripts/font-audit.sh" diff snap2 snap3 >"$fa/d2.txt" 2>&1; then
+    bad "an added font file compared as UNCHANGED"
+else
+    ok "an added font file compares as CHANGED"
+fi
+if grep -q 'two.ttf' "$fa/d2.txt"; then ok "the diff names the added file"; else bad "the diff does not name the added file"; fi
+rm -f "$fa/fonts/two.ttf"
+"$REPO/scripts/font-audit.sh" save snap4 >/dev/null 2>&1
+if "$REPO/scripts/font-audit.sh" diff snap3 snap4 >/dev/null 2>&1; then
+    bad "a removed font file compared as UNCHANGED"
+else
+    ok "a removed font file compares as CHANGED"
+fi
+unset FONT_AUDIT_DIR FONT_AUDIT_DIRS
+rm -rf "$fa"
+
 section "repository hygiene"
 if git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1; then
     if git -C "$REPO" diff --check >/dev/null 2>&1; then ok "no whitespace errors (git diff --check)"; else bad "git diff --check reported whitespace errors"; fi

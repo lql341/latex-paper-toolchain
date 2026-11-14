@@ -1,9 +1,10 @@
 # Release highlights — latex-paper-toolchain
 
-- New `docs/ROADMAP.md`: the four things this repository does **not** automate — Windows/WSL, a real
-  BasicTeX build on a CI runner, end-to-end desktop-font verification on a real Debian desktop, and
-  confirming the TeX Live 2020 floor — each with its blocker and a copy-pasteable manual procedure.
-- LuaLaTeX (declined) and Intel Mac (blocked, no hardware) are recorded rather than silently absent.
-- The document defines its own lifecycle and a document map: which file answers which question, and
-  what to move where when an item is finished.
-- Documentation only; no script or behaviour changed in this release.
+- `font-audit.sh` can now be tested in both directions. Previously the suite only asserted
+  "unchanged", which is an assertion that cannot fail; with a `FONT_AUDIT_DIRS` seam the tests prove
+  that a modified, added or removed font file is reported as `CHANGED` (and that the added file is
+  named in the diff).
+- `cold-build.sh --png` is exercised by the TeX layer: it now fails if the render line is missing,
+  the renderer errored, or no image appeared.
+- `docs/ROADMAP.md` gains R7: required status checks are repository settings, not files, and the
+  exact `gh api` call that enables them is written down.

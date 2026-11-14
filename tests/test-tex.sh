@@ -17,7 +17,28 @@ section() { printf '\n== %s\n' "$*"; }
 
 if ! command -v xelatex >/dev/null 2>&1; then
     note "TeX layer (xelatex not on PATH)"
-    printf '\n%d passed, %d failed, %d skipped\n' "$pass" "$fail" "$skip"
+    section "page rendering (optional)"
+if command -v sips >/dev/null 2>&1 || command -v pdftoppm >/dev/null 2>&1; then
+    out=$("$REPO/scripts/cold-build.sh" --png 2>&1)
+    if echo "$out" | grep -q 'WARN  sips failed\|WARN  pdftoppm failed'; then
+        bad "--png reported a render failure"
+    elif echo "$out" | grep -q '== render:'; then
+        rendered=$(echo "$out" | sed -n 's/.*== render: \([^ ]*\).*/\1/p' | head -n 1)
+        if [ -n "$rendered" ] && [ -f "$REPO/assets/example/$rendered" ]; then
+            ok "--png produced $rendered"
+        elif [ -n "$rendered" ] && [ -f "$REPO/assets/example/${rendered%.png}-1.png" ]; then
+            ok "--png produced ${rendered%.png}-1.png"
+        else
+            bad "--png said it rendered but produced no file"
+        fi
+    else
+        bad "--png produced no render line"
+    fi
+else
+    note "page rendering (no sips and no pdftoppm)"
+fi
+
+printf '\n%d passed, %d failed, %d skipped\n' "$pass" "$fail" "$skip"
     exit 0
 fi
 
@@ -98,6 +119,27 @@ else
     ok "cold-build.sh rejects a dangling reference"
 fi
 rm -rf "$tmp"
+
+section "page rendering (optional)"
+if command -v sips >/dev/null 2>&1 || command -v pdftoppm >/dev/null 2>&1; then
+    out=$("$REPO/scripts/cold-build.sh" --png 2>&1)
+    if echo "$out" | grep -q 'WARN  sips failed\|WARN  pdftoppm failed'; then
+        bad "--png reported a render failure"
+    elif echo "$out" | grep -q '== render:'; then
+        rendered=$(echo "$out" | sed -n 's/.*== render: \([^ ]*\).*/\1/p' | head -n 1)
+        if [ -n "$rendered" ] && [ -f "$REPO/assets/example/$rendered" ]; then
+            ok "--png produced $rendered"
+        elif [ -n "$rendered" ] && [ -f "$REPO/assets/example/${rendered%.png}-1.png" ]; then
+            ok "--png produced ${rendered%.png}-1.png"
+        else
+            bad "--png said it rendered but produced no file"
+        fi
+    else
+        bad "--png produced no render line"
+    fi
+else
+    note "page rendering (no sips and no pdftoppm)"
+fi
 
 printf '\n%d passed, %d failed, %d skipped\n' "$pass" "$fail" "$skip"
 [ "$fail" -eq 0 ] || exit 1
