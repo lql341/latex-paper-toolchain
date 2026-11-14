@@ -81,44 +81,56 @@ for sty in ctex.sty xeCJK.sty fontspec.sty zhnumber.sty amsmath.sty \
 done
 check_sty biblatex.sty 0   # optional: only papers that cite need it
 check_sty listings.sty 0   # optional: code blocks in the example
-# --- CJK font probe ---------------------------------------------------------
+# --- CJK font probe ---
 say "== CJK font probe"
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/latex-doctor.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT INT TERM
 
+# Each candidate is "label|main font|sans font|how". Fandol is addressed by file
+# name because on Ubuntu's TeX Live the family name does not resolve while the
+# .otf file does.
 if [ "$OS" = Darwin ]; then
-    MAIN_FONT="Songti SC Regular"
-    SANS_FONT="Heiti SC Light"
+    CANDIDATES="macOS native|Songti SC Regular|Heiti SC Light"
 else
-    MAIN_FONT="FandolSong-Regular"
-    SANS_FONT="FandolHei-Regular"
+    CANDIDATES="Fandol (files)|FandolSong-Regular.otf|FandolHei-Regular.otf
+Fandol (family)|FandolSong|FandolHei"
 fi
 
-cat >"$TMP/probe.tex" <<EOF
+probe_ok=0
+if have xelatex; then
+    while IFS='|' read -r label main_font sans_font; do
+        [ -n "${label:-}" ] || continue
+        cat >"$TMP/probe.tex" <<EOF
 \\documentclass[UTF8,fontset=none]{ctexart}
-\\setCJKmainfont{$MAIN_FONT}
-\\setCJKsansfont{$SANS_FONT}
+\\setCJKmainfont{$main_font}
+\\setCJKsansfont{$sans_font}
 \\begin{document}
 中文 CJK probe 0123
 \\end{document}
 EOF
+        set +e
+        ( cd "$TMP" && xelatex -no-pdf -interaction=nonstopmode -halt-on-error probe.tex ) \
+            >"$TMP/probe.out" 2>&1
+        probe_status=$?
+        set -e
+        if [ "$probe_status" -eq 0 ]; then
+            ok "XeTeX opened CJK fonts ($label: $main_font / $sans_font)"
+            probe_ok=1
+            break
+        fi
+    done <<EOF
+$CANDIDATES
+EOF
 
-if have xelatex; then
-    set +e
-    ( cd "$TMP" && xelatex -no-pdf -interaction=nonstopmode -halt-on-error probe.tex ) \
-        >"$TMP/probe.out" 2>&1
-    probe_status=$?
-    set -e
-    if [ "$probe_status" -eq 0 ]; then
-        ok "XeTeX opened '$MAIN_FONT' and '$SANS_FONT'"
-    else
-        problem "XeTeX cannot open '$MAIN_FONT' / '$SANS_FONT' by family name"
-        grep -E '^(!!|! )|Font .* not found|fontspec error' "$TMP/probe.out" | head -n 5 | sed 's/^/      /'
+    if [ "$probe_ok" -ne 1 ]; then
+        problem "XeTeX cannot open any CJK font on this machine"
+        grep -E '^(!!|! )|not found|fontspec error' "$TMP/probe.out" | head -n 5 | sed 's/^/      /'
         if [ "$OS" = Darwin ]; then
             say "      macOS: pin Songti SC / Heiti SC (assets/macos/macos-native-fonts.tex);"
             say "      do not copy fonts into ~/Library/Fonts."
         else
             say "      Debian/Ubuntu: sudo apt-get install --no-install-recommends texlive-lang-chinese"
+            say "      (that package carries the Fandol .otf files used above)"
         fi
         fail=1
     fi

@@ -21,9 +21,12 @@
   {\IfFileExists{../macos/macos-native-fonts.tex}
      {\input{../macos/macos-native-fonts}}
      {\setCJKmainfont{Songti SC Regular}}}
-  {\setCJKmainfont{FandolSong-Regular}[BoldFont=FandolSong-Bold]
-   \setCJKsansfont{FandolHei-Regular}[BoldFont=FandolHei-Bold]
-   \setCJKmonofont{FandolFang-Regular}}
+  % Fandol ships inside TEXMF: address the files, not the family. On Ubuntu's TeX
+  % Live the family name "FandolSong-Regular" does not resolve, the file does.
+  {\setCJKmainfont{FandolSong-Regular.otf}[BoldFont={FandolSong-Bold.otf},
+                                        ItalicFont={FandolKai-Regular.otf}]
+   \setCJKsansfont{FandolHei-Regular.otf}[BoldFont={FandolHei-Bold.otf}]
+   \setCJKmonofont{FandolFang-Regular.otf}}
 
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}

@@ -34,7 +34,8 @@ not a general truth about LaTeX.
 | 17 | Removing added fonts + `fc-cache -f` + full reboot restores rendering | D1 | verified | recovery sequence in `debian-fontconfig.md` §6 |
 | 18 | Same document builds on macOS and Linux with different fonts | M1, D1 | verified per platform | example falls back to Fandol when Songti is absent |
 
-| 19 | CI's `tex` job (ubuntu-latest + apt TeX Live) builds `assets/example` with Fandol | CI | pending first run | workflow added 2026-11-14; result recorded by the badge, not by this table |
+| 19 | `\setCJKmainfont{FandolSong-Regular}` (family) fails on Ubuntu TeX Live; the `.otf` file name works | CI (ubuntu-latest, apt TeX Live) | verified 2026-11-14 | CI run 43609000774: "font not found" with the family name; file-name binding compiles |
+| 20 | CI's `tex` job (ubuntu-latest + apt TeX Live) builds `assets/example` with Fandol | CI | pending first run | workflow added 2026-11-14; result recorded by the badge, not by this table |
 
 ## Not verified (do not claim)
 
@@ -48,6 +49,7 @@ not a general truth about LaTeX.
 | Ubuntu packaging matches Debian 13 for `texlive-lang-chinese` | untested |
 | Byte-identical PDF output across macOS and Debian | **false by design** — native fonts vs Fandol |
 | The Fandol fallback in `assets/example` builds on a machine without `texlive-lang-chinese` | untested — the fallback assumes Fandol is present |
+| Fandol file names are identical across TeX Live versions | untested — only apt TeX Live on ubuntu-latest and the Fandol package contract |
 | Local macOS shell can reproduce the Debian font isolation | untested — cross-platform, not re-run |
 | The sandbox `codesign` result says anything about the host trust chain | explicitly rejected |
 

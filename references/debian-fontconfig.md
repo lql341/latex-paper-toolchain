@@ -96,8 +96,22 @@ latexmk -xelatex -interaction=nonstopmode -halt-on-error main.tex
 grep -m1 'ctex-fontset-fandol' main.log
 ```
 
-Seeing `ctex-fontset-fandol.def` in the log is the proof that Chinese typesetting came from TEXMF,
-independent of the desktop font stack. Then run the normal verification loop:
+If you let CTeX pick the fontset (no `fontset=none`, no explicit binding), the log shows
+`ctex-fontset-fandol.def` — that is the proof Chinese typesetting came from TEXMF, independent of
+the desktop font stack.
+
+If you bind the fonts yourself, address the **files**, not the family. Measured on Ubuntu's TeX
+Live (CI, 2026-11-14): `\setCJKmainfont{FandolSong-Regular}` fails with "font not found", while
+`\setCJKmainfont{FandolSong-Regular.otf}` succeeds. This is what `assets/example/main.tex` does.
+
+```latex
+\setCJKmainfont{FandolSong-Regular.otf}[BoldFont={FandolSong-Bold.otf},
+                                        ItalicFont={FandolKai-Regular.otf}]
+\setCJKsansfont{FandolHei-Regular.otf}[BoldFont={FandolHei-Bold.otf}]
+\setCJKmonofont{FandolFang-Regular.otf}
+```
+
+Then run the normal verification loop:
 
 ```bash
 scripts/doctor.sh

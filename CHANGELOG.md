@@ -24,6 +24,9 @@ XeLaTeX toolchain on macOS (2026-08-30) and while isolating CTeX fonts on Debian
   layer that runs doctor, cold build and a font-invariant assertion; auto-skips without `xelatex`.
 - `references/verified-matrix.md` — every claim with its environment, date, and status, including
   what was deliberately not verified.
+- Linux/Fandol font binding addresses the `.otf` files instead of the family name: on Ubuntu's TeX
+  Live, `\setCJKmainfont{FandolSong-Regular}` is not found while `FandolSong-Regular.otf` is. Found
+  by the first CI run, recorded in `references/verified-matrix.md`.
 - `.github/workflows/ci.yml` — `static` job (no TeX needed) plus a `tex` job that installs a
   minimal Debian-flavoured toolchain on ubuntu-latest and runs the full test suite, which is also
   the first real verification of the Linux/Fandol path.
