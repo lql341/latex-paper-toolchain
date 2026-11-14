@@ -24,10 +24,22 @@ fi
 section "doctor"
 if "$REPO/scripts/doctor.sh" >/tmp/lpt-doctor.log 2>&1; then
     ok "doctor.sh exit 0"
-    grep -E '^ok    (xelatex|ctex\.sty|XeTeX opened)' /tmp/lpt-doctor.log | head -n 3 | sed 's/^/         /'
+    grep -E '^ok    (xelatex|ctex\.sty|siunitx|pgfplots|XeTeX opened)' /tmp/lpt-doctor.log | head -n 4 | sed 's/^/         /'
 else
     bad "doctor.sh reported problems (see /tmp/lpt-doctor.log)"
     grep -E '^FAIL' /tmp/lpt-doctor.log | head -n 5 | sed 's/^/         /'
+fi
+
+section "feature floors are reported"
+if grep -q 'siunitx v3' /tmp/lpt-doctor.log; then
+    ok "doctor names the siunitx v3 floor"
+else
+    bad "doctor does not report the siunitx version"
+fi
+if grep -q 'compat=1.18' /tmp/lpt-doctor.log; then
+    ok "doctor names the pgfplots floor"
+else
+    bad "doctor does not report the pgfplots version"
 fi
 
 section "font manifest is stable across a build"

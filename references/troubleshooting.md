@@ -41,6 +41,31 @@ use explicit binding instead:
 
 After this the log is clean. This is a synthetic slant, not a real italic face.
 
+## `Undefined control sequence \qty` (or `compat=1.18` unknown)
+
+**Cause:** TeX Live older than 2021. `\qty` is a siunitx v3 command; `\pgfplotset{compat=1.18}`
+needs pgfplots >= 1.18. Debian 11 and Ubuntu 20.04 ship TeX Live 2020, where both are missing —
+and the error points at the document, not at the age of the installation.
+
+Diagnose:
+
+```bash
+scripts/doctor.sh | sed -n '/feature floors/,/CJK font probe/p'
+kpsewhich siunitx.sty | xargs grep -l 'ProvidesExplPackage'   # v3 marker
+```
+
+Options, in order of preference:
+
+1. install a newer TeX Live (`scripts/install-debian.sh` targets current Debian/Ubuntu, which are
+   fine; for an old release use the upstream `install-tl`);
+2. if you must stay on the old installation, rewrite the affected commands for siunitx v2:
+   `\qty{1.2}{\metre\per\second}` → `\SI{1.2}{\metre\per\second}`, `\num{3.14e-2}` stays valid;
+3. drop `compat=1.18` to the highest level your pgfplots supports (it degrades behaviour, so it is
+   the last resort).
+
+Do not "fix" this by editing `assets/example` to the lowest common denominator: the example exists
+to state the floor.
+
 ## BasicTeX cask ends with a partial download
 
 **Observed:** CTAN mirror truncation at the tail of the package; Homebrew keeps the partial file in

@@ -1,5 +1,7 @@
 # latex-paper-toolchain — 中英文论文排版工具链（Agent Skill）
 
+[![Validate skill](https://github.com/lql341/latex-paper-toolchain/actions/workflows/validate.yml/badge.svg)](https://github.com/lql341/latex-paper-toolchain/actions/workflows/validate.yml)
+
 一个 [Agent Skill](https://agentskills.io/specification)：装**最小可用**的 XeLaTeX/CTeX 工具链，
 然后**证明它真的能用**，而不是编译一次就算成功。
 
@@ -72,6 +74,7 @@ git clone https://github.com/lql341/latex-paper-toolchain
 cd latex-paper-toolchain
 ./scripts/install.sh                            # 复制到 ~/.agents/skills/<name>
 ./scripts/install.sh --claude --codex --link    # 另链 Claude Code / Codex，改仓库即生效
+./scripts/install.sh --minimal                  # 不拷贝 tests/ 与 .github/
 ```
 
 `~/.agents/skills/` 是 pi 与 Claude Code 共用的目录；Codex 是否扫描因机器而异，所以有 `--codex`。
@@ -96,7 +99,9 @@ bash tests/run-all.sh --static-only   # 不要 TeX、不要 apt
 
 ## 适用范围（别当成通用结论）
 
-已验证：macOS 26.6.2（Apple Silicon）+ BasicTeX/TeX Live 2026；Debian 13 + `texlive-xetex`。
+已验证：macOS 26.6.2（Apple Silicon）+ BasicTeX/TeX Live 2026；Ubuntu 26.04（CI，apt TeX Live）。
+自带样例需要 **TeX Live ≥ 2021**（`\qty` 是 siunitx v3，`compat=1.18` 需要 pgfplots 1.18），
+`doctor.sh` 会直接报这条下限，而不是等到编译时报一句莫名其妙的 `Undefined control sequence`。
 **未验证**：Intel Mac、更早的 macOS、LuaLaTeX、TeX Live 2027、Windows、跨平台逐字节一致排版。
 每条结论都标注了环境，见 [`references/verified-matrix.md`](references/verified-matrix.md)。
 

@@ -1,5 +1,7 @@
 # latex-paper-toolchain — an Agent Skill for bilingual LaTeX paper toolchains
 
+[![Validate skill](https://github.com/lql341/latex-paper-toolchain/actions/workflows/validate.yml/badge.svg)](https://github.com/lql341/latex-paper-toolchain/actions/workflows/validate.yml)
+
 An [Agent Skill](https://agentskills.io/specification) that installs the **minimum** XeLaTeX/CTeX
 toolchain for Chinese + English papers and then **proves it works**, instead of trusting a first
 compile.
@@ -101,9 +103,10 @@ fail is not a verification script.
 
 ## Honest scope
 
-Verified on macOS 26.6.2 (Apple Silicon) with BasicTeX/TeX Live 2026, and on Debian 13 with
-`texlive-xetex`. **Not** verified: Intel Macs, older macOS, LuaLaTeX, TeX Live 2027, Windows,
-byte-identical layout across platforms. Every claim carries its environment in
+Verified on macOS 26.6.2 (Apple Silicon) with BasicTeX/TeX Live 2026, and on Ubuntu 26.04 CI with
+apt TeX Live. The bundled example needs TeX Live >= 2021 (`\qty` is siunitx v3, `compat=1.18` needs
+pgfplots 1.18); `doctor.sh` reports that floor instead of failing late. **Not** verified: Intel Macs,
+older macOS, LuaLaTeX, TeX Live 2027, Windows, byte-identical layout across platforms. Every claim carries its environment in
 [`references/verified-matrix.md`](references/verified-matrix.md).
 
 MIT licensed.

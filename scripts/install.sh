@@ -6,6 +6,7 @@
 #   ./scripts/install.sh --claude         # also link ~/.claude/skills/<name>
 #   ./scripts/install.sh --codex          # also link ~/.codex/skills/<name>
 #   ./scripts/install.sh --link           # symlink instead of copying (edit = live)
+#   ./scripts/install.sh --minimal        # skip tests/ and .github/ in the copy
 #   ./scripts/install.sh --dest DIR       # explicit skills root: installs DIR/<skill-name>
 #
 # ~/.agents/skills is the shared location read by pi and Claude Code. Codex scans it
@@ -28,6 +29,7 @@ SKILL_NAME=$(sed -n '1,40p' "$SRC/SKILL.md" 2>/dev/null | sed -n 's/^name: *//p'
 [ -n "$SKILL_NAME" ] || SKILL_NAME=$(basename "$LPT_REPO")
 mode="user"
 link=0
+minimal=0
 dest=""
 also_claude=0
 also_codex=0
@@ -39,11 +41,12 @@ while [ $# -gt 0 ]; do
         --claude) also_claude=1 ;;
         --codex) also_codex=1 ;;
         --link) link=1 ;;
+        --minimal) minimal=1 ;;
         --dest)
             [ $# -ge 2 ] || { echo "install.sh: --dest needs a path" >&2; exit 2; }
             dest=$2
             shift ;;
-        -h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "install.sh: unknown option $1" >&2; exit 2 ;;
     esac
     shift
@@ -100,6 +103,11 @@ install_into() { # install_into <target-dir> <label>
         cp -R "$SRC" "$tgt"
         # A copy must not carry the repository's git metadata or build products.
         rm -rf "$tgt/.git"
+        if [ "$minimal" -eq 1 ]; then
+            # tests/ and .github/ are for developing the skill, not for using it.
+            rm -rf "$tgt/tests" "$tgt/.github"
+            say "   minimal: dropped tests/ and .github/"
+        fi
         find "$tgt" -name '*.aux' -o -name '*.log' -o -name '*.pdf' -o -name '*.xdv' \
             -o -name '*.bbl' -o -name '*.fls' -o -name '*.fdb_latexmk' 2>/dev/null \
             | while IFS= read -r f; do rm -f "$f"; done

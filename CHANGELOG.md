@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.0 - 2026-11-14
+
+Portability floor, macOS CI coverage, and install polish.
+
+- `doctor.sh` now reports **feature floors** instead of failing late: it detects the siunitx v3
+  marker (`\ProvidesExplPackage {siunitx}`) and pgfplots' own `\pgfplotsversion`, because the
+  example needs TeX Live >= 2021 (`\qty`, `compat=1.18`). On an older install it says what will
+  break and how to work around it, instead of letting the build die with
+  `Undefined control sequence \qty`.
+- Documented the floor in `SKILL.md`, both READMEs, `references/troubleshooting.md` (with the
+  siunitx v2 fallback and the `install-tl` route) and `references/verified-matrix.md` — including
+  the honest note that no TeX Live 2020 machine was available to test it.
+- `validate.yml` gains a **macOS job** running the static and Debian-tools layers. It does not
+  install BasicTeX (sudo, minutes, and it would only re-test the author's machine); its job is to
+  catch BSD-vs-GNU drift in `stat`, `sed -i` and `mktemp` usage.
+- `install.sh --minimal` skips `tests/` and `.github/` when copying, so a consumer installation
+  carries only what the model needs plus the references.
+- `scripts/_common.sh` is no longer executable — it is sourced, never run — and the static layer
+  now asserts that, the reverse of what it asserts for the entry points.
+- READMEs carry a Validate badge; the repository has topics for discoverability.
+
 ## 0.2.2 - 2026-11-14
 
 Found by cloning the published repository into a directory with a different name and running the

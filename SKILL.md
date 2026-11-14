@@ -2,7 +2,7 @@
 name: latex-paper-toolchain
 description: Set up, repair, and verify a minimal XeLaTeX/CTeX toolchain for bilingual (Chinese/English) papers — BasicTeX on macOS or TeX Live on Debian without polluting the desktop font stack, stable native CJK font binding, and a cold-state build proven by embedded font names and clean reference/bibliography resolution. Use when installing, auditing, or debugging the paper toolchain itself, not for ordinary LaTeX syntax questions.
 license: MIT
-compatibility: Verified on macOS 26.6.2 (Apple Silicon) + BasicTeX/TeX Live 2026, and on Ubuntu 26.04 CI with apt TeX Live. Scripts are POSIX sh; no Python except one CI meta-check, no network, no root unless apt/tlmgr needs it.
+compatibility: Verified on macOS 26.6.2 (Apple Silicon) + BasicTeX/TeX Live 2026, and on Ubuntu 26.04 CI with apt TeX Live. Requires TeX Live >= 2021 for the bundled example (siunitx v3 `\qty`, pgfplots compat 1.18); the scripts themselves are POSIX sh, need no network, and need root only where apt/tlmgr does.
 ---
 
 # latex-paper-toolchain
@@ -41,7 +41,7 @@ places where the default answer is wrong.
 | Odd errors, missing sty, interrupted install | `references/troubleshooting.md` |
 | Writing a new paper | copy `assets/macos/macos-native-fonts.tex`, start from `assets/example/main.tex` |
 | Prove an install changed nothing | `scripts/font-audit.sh save before|after` → `diff` |
-| Put this skill on a machine | `scripts/install.sh [--claude] [--codex] [--link]` |
+| Put this skill on a machine | `scripts/install.sh [--claude] [--codex] [--link] [--minimal]` |
 
 Every script takes `--help` and is dry-run by default where it would change the system
 (`install-debian.sh`, `fontconfig-isolate.sh --dry-run`). Read the printed plan before `--apply`.
@@ -67,6 +67,9 @@ font manifest hash is unchanged. "It builds" without those three is not a result
   `fontset=none` instead of installing the font.
 - A `codesign`/`spctl` failure inside a sandbox is not evidence about the host system's trust
   chain; do not report it as tampering or as verification.
+- TeX Live older than 2021 cannot build `assets/example` (siunitx v2 has no `\qty`, pgfplots < 1.18
+  has no `compat=1.18`). `doctor.sh` reports the floor; do not "fix" it by editing the example,
+  and do not claim the toolchain works there.
 - Cross-platform byte-identical layout is **not** a goal: macOS native fonts and Linux Fandol
   will differ. Reproducibility here means "the same platform rebuilds the same document".
 

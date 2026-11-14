@@ -1,9 +1,11 @@
 # 发布要点 — latex-paper-toolchain
 
-- 技能名是身份，不是目录名。`release_docs.py` 与 `test-static.sh` 现在拿 `SKILL.md` 里的 `name`
-  和 `latex-paper-toolchain` 比较，而不是和检出目录比较；fork、CI 工作区或
-  `git clone <url> my-copy` 不会因为目录名不同而校验失败。
-- `install.sh` 从 frontmatter 读取技能名，所以换个名字的检出目录依然装成 `latex-paper-toolchain`，
-  而不是装成本地目录名。
-- `--dest DIR` 现在是"skills 根目录"：技能落在 `DIR/<技能名>`，安装路径不再取决于脚本怎么被调用。
-- 这两条行为都纳入了静态测试层。
+- `doctor.sh` 改为**先报版本下限**，而不是等你编译时炸：它从已安装的宏包识别 siunitx v3（`\qty`）
+  与 pgfplots 1.18（`compat=1.18`）。自带样例需要 TeX Live ≥ 2021；在 Debian 11 / Ubuntu 20.04 上，
+  旧行为是 `Undefined control sequence \qty`，报错指向文档而不是指向过老的 TeX 安装。
+- 这条下限写进了技能本体、两份 README、troubleshooting（含 siunitx v2 替代写法和上游 `install-tl`
+  路线）以及验证矩阵——并且如实标注"没有 TeX Live 2020 的机器可以实测"。
+- CI 增加 macOS 作业，跑静态层与 Debian 工具层，专抓 `stat`、`sed -i`、`mktemp` 的 BSD/GNU 差异；
+  BasicTeX 仍然只在真机上验证。
+- `install.sh --minimal` 不拷贝 `tests/` 与 `.github/`；`_common.sh` 改为不可执行（它是被 source 的
+  库），静态测试对这两种情况都有断言。

@@ -78,6 +78,39 @@ for sty in ctex.sty xeCJK.sty fontspec.sty zhnumber.sty amsmath.sty \
 done
 check_sty biblatex.sty 0   # optional: only papers that cite need it
 check_sty listings.sty 0   # optional: code blocks in the example
+# --- feature floors ----------------------------------------------------------
+# The example document uses \qty (siunitx v3) and compat=1.18 (pgfplots >= 1.18).
+# Both are TeX Live 2021 features. Distros older than that (Debian 11, Ubuntu 20.04)
+# fail late with "Undefined control sequence", so name the floor here instead.
+say "== feature floors"
+
+siunitx_sty=$(kpsewhich siunitx.sty 2>/dev/null || true)
+if [ -z "$siunitx_sty" ]; then
+    warn "siunitx.sty not found; \qty/\num and the example need it"
+elif grep -q 'ProvidesExplPackage *{siunitx}' "$siunitx_sty"; then
+    sv=$(sed -n 's/.*{siunitx} *{[0-9-]*} *{\([0-9.]*\)}.*/\1/p' "$siunitx_sty" | head -n 1)
+    ok "siunitx v${sv:-3}: \qty and \num available"
+else
+    warn "siunitx v2 detected: \qty/\num need v3 (TeX Live >= 2021)."
+    say "      assets/example/main.tex will not build; replace \qty{a}{b} with \SI{a}{b},"
+    say "      or install a newer TeX Live (references/troubleshooting.md)."
+fi
+
+pgf_rev=$(kpsewhich pgfplots.revision.tex 2>/dev/null || true)
+if [ -n "$pgf_rev" ]; then
+    pv=$(sed -n 's/.*\\pgfplotsversion{\([0-9.]*\)}.*/\1/p' "$pgf_rev" | head -n 1)
+    if [ -n "$pv" ]; then
+        p_major=${pv%%.*}
+        p_rest=${pv#*.}
+        p_minor=${p_rest%%.*}
+        if [ "$p_major" -gt 1 ] || { [ "$p_major" -eq 1 ] && [ "$p_minor" -ge 18 ]; }; then
+            ok "pgfplots $pv: compat=1.18 available"
+        else
+            warn "pgfplots $pv is older than 1.18; the example's compat=1.18 will fail"
+        fi
+    fi
+fi
+
 # --- CJK font probe ---
 say "== CJK font probe"
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/latex-doctor.XXXXXX")

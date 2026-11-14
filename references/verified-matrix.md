@@ -43,7 +43,8 @@ not a general truth about LaTeX.
 | 24 | Writing the isolation rule does not change the default sans resolution | M1 (override), CI | verified, narrow | `fc-match sans-serif:lang=zh-cn` identical before/after `--write`. On the CI runner this resolves to `DejaVu Sans` because no CJK font is installed there, so it proves the rule is inert for the default family — **not** that a real CJK fallback chain survived |
 | 25 | `install-debian.sh` is dry-run by default and its plan keeps `fonts-noto-cjk` out | CI | verified 2026-11-14 | 24/24 in CI run 43611365668; no package is installed by that test |
 | 26 | The minimal apt set installed by `install-debian.sh --apply` is sufficient to build `assets/example` | CI | verified 2026-11-14 | CI run 43611365668: the tex job installs through the script, then `test-tex.sh` passes |
-| 27 | A document with a dangling `\ref` fails `cold-build.sh` | M1, CI | verified 2026-11-14 | `test-tex.sh` builds a copy with the label removed and expects a non-zero exit (green locally and in CI 43611365668) |
+| 27 | The siunitx v3 marker (`\ProvidesExplPackage {siunitx}`) distinguishes `\qty` builds from v2, and pgfplots ships `pgfplotsversion` in `pgfplots.revision.tex` | M1 | verified 2026-11-14 | `doctor.sh` reports `siunitx v3.5.6` and `pgfplots 1.18.3` on this machine; the check is `grep`-based, not a version guess |
+| 28 | A document with a dangling `\ref` fails `cold-build.sh` | M1, CI | verified 2026-11-14 | `test-tex.sh` builds a copy with the label removed and expects a non-zero exit (green locally and in CI 43611365668) |
 
 ## Not verified (do not claim)
 
@@ -59,6 +60,7 @@ not a general truth about LaTeX.
 | The Fandol fallback in `assets/example` builds on a machine without `texlive-lang-chinese` | untested — the fallback assumes Fandol is present |
 | Fandol file names are identical across TeX Live versions | untested — only apt TeX Live on ubuntu-latest and the Fandol package contract |
 | Local macOS shell can reproduce the Debian font isolation | untested — cross-platform, not re-run |
+| TeX Live 2020 behaviour (Debian 11, Ubuntu 20.04) with `\qty` | untested — the floor is asserted from siunitx's own v3 marker, not from a build on that release |
 | The sandbox `codesign` result says anything about the host trust chain | explicitly rejected |
 | The Debian recovery sequence (§6) was re-run by the test suite | no — it is a recorded 2026-08-30 session, not an automated test |
 | `install-debian.sh --apply` is safe on an existing desktop with custom fonts | untested — only CI (no desktop) and the recorded session |

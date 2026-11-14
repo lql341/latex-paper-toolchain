@@ -37,6 +37,18 @@ jobs:
             exit 1
           fi
 
+  static-macos:
+    name: static checks (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # No BasicTeX here: installing it needs sudo and several minutes, and would
+      # only re-test what the author's machine already covers. What this job does
+      # catch is BSD-vs-GNU drift in the scripts and tests (stat, sed -i, mktemp).
+      - name: static + Debian-tools layers (no TeX, no apt)
+        run: bash tests/run-all.sh --static-only
+
   debian-tools:
     name: Debian tools (hermetic)
     runs-on: ubuntu-latest

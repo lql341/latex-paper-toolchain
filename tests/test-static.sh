@@ -27,7 +27,13 @@ done < <(find "$REPO/tests" -name '*.sh' | LC_ALL=C sort)
 section "executable bits"
 while IFS= read -r f; do
     if [ -x "$f" ]; then ok "$(basename "$f")"; else bad "$(basename "$f") is not executable"; fi
-done < <(find "$REPO/scripts" -name '*.sh' | LC_ALL=C sort)
+done < <(find "$REPO/scripts" -name '*.sh' ! -name '_common.sh' | LC_ALL=C sort)
+# _common.sh is sourced, never executed: it must NOT have the executable bit.
+if [ -f "$REPO/scripts/_common.sh" ] && [ ! -x "$REPO/scripts/_common.sh" ]; then
+    ok "_common.sh is a library (not executable)"
+else
+    bad "_common.sh should not be executable"
+fi
 
 section "--help smoke test"
 while IFS= read -r f; do
@@ -156,6 +162,25 @@ else
     find "$itmp2/target" -maxdepth 2 -mindepth 1 2>/dev/null | sed 's/^/         /'
 fi
 rm -rf "$itmp2"
+
+section "install.sh --minimal"
+itmp3=$(mktemp -d)
+if "$REPO/scripts/install.sh" --minimal --dest "$itmp3" >/dev/null 2>&1; then
+    stim="$itmp3/latex-paper-toolchain"
+    if [ -f "$stim/SKILL.md" ] && [ -d "$stim/scripts" ] && [ -d "$stim/references" ]; then
+        ok "minimal install keeps what the model needs"
+    else
+        bad "minimal install is missing SKILL.md/scripts/references"
+    fi
+    if [ -e "$stim/tests" ] || [ -e "$stim/.github" ]; then
+        bad "minimal install kept tests/ or .github/"
+    else
+        ok "minimal install drops tests/ and .github/"
+    fi
+else
+    bad "install.sh --minimal failed"
+fi
+rm -rf "$itmp3"
 
 section "repository hygiene"
 if git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1; then
