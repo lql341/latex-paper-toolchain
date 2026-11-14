@@ -1,16 +1,11 @@
 # Release highlights — latex-paper-toolchain
 
-- Debian/Ubuntu is now executable, not just documented: `scripts/install-debian.sh` prints its
-  plan by default and `--apply` runs it in the safe order (fontconfig isolation first, then apt,
-  then a before/after font manifest).
-- `scripts/fontconfig-isolate.sh` writes, checks and removes the user-level `rejectfont` rule that
-  keeps the Arphic fonts pulled in by `texlive-lang-chinese` out of the desktop fallback chain.
-- `scripts/install.sh` installs the skill into `~/.agents/skills` (plus optional Claude Code and
-  Codex locations), copying by default and backing up whatever it replaces.
-- Shared helpers moved into `scripts/_common.sh`; every script is still POSIX sh and passes
-  `shellcheck -s sh`.
-- The test suite is split by layer (`test-static.sh`, `test-debian-tools.sh`, `test-tex.sh`) and now
-  includes negative cases: a document with a dangling `\ref` must fail, and `--expect-font` must
-  fail when the font is absent.
-- CI mirrors the repository contract: validation, a real TeX build installed through the skill's own
-  Debian installer, the hermetic fontconfig cycle, and release publication from these highlights.
+- `scripts/install.sh` no longer destroys the checkout it installs from. It compared destination and
+  source as strings; on a machine where `~/.agents/skills` is a symlink into the same repository
+  those are one directory with two names, so it moved the repository aside as a "backup" and then
+  failed to copy from a path that no longer existed. Both sides are now resolved with `pwd -P`.
+- Re-running `install.sh --link` against an existing symlinked installation is a no-op instead of a
+  re-link.
+- The static test layer covers both install layouts: a symlinked skills root (source intact, no
+  backup of the source) and a genuine install into a fresh destination (SKILL.md present, `.git`
+  stripped).

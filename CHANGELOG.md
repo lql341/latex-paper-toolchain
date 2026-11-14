@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.1 - 2026-11-14
+
+Fixes a destructive path in `scripts/install.sh`, found by asking it to install onto a machine
+whose `~/.agents/skills` is a symlink into the same checkout (the layout this repository's author
+actually runs).
+
+- `install.sh` compared the destination with the source as strings. With a symlinked skills root
+  the two are the same directory but different strings, so the installer moved the repository aside
+  as a "backup" and then failed copying from a path that no longer existed. It now resolves both
+  sides with `pwd -P` and reports "resolve to the same directory; nothing to do" instead.
+- The `--link` fast path uses the same canonical comparison, so re-running it on a symlinked
+  installation is a no-op rather than a re-link.
+- `tests/test-static.sh` covers the layout: symlinked skills root (source intact, no `.bak` of the
+  source) and a genuine install into a fresh destination (SKILL.md present, `.git` dropped).
+
 ## 0.2.0 - 2026-11-14
 
 The Debian/Ubuntu half stops being documentation and becomes an executable, testable procedure;

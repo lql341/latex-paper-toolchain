@@ -110,6 +110,34 @@ secrets=$(grep -rInE 'sk-[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|BEGIN [A-Z ]*PRIVATE 
     --exclude-dir=.git --exclude-dir=tests "$REPO" 2>/dev/null || true)
 if [ -z "$secrets" ]; then ok "no credential-looking strings"; else bad "credential-looking strings found"; fi
 
+section "install.sh is safe when the skills root is a symlink"
+# A very common layout: ~/.agents/skills is a symlink into one shared checkout, so
+# the "destination" is literally the source. A string comparison would move the
+# repository aside; the installer must compare canonical paths instead.
+itmp=$(mktemp -d)
+mkdir -p "$itmp/skills" "$itmp/home/.agents"
+cp -R "$REPO" "$itmp/skills/latex-paper-toolchain"
+rm -rf "$itmp/skills/latex-paper-toolchain/.git"
+ln -s "$itmp/skills" "$itmp/home/.agents/skills"
+iout=$(HOME="$itmp/home" bash "$itmp/skills/latex-paper-toolchain/scripts/install.sh" 2>&1)
+istatus=$?
+if [ "$istatus" -eq 0 ]; then ok "install.sh exits 0 on a symlinked skills root"; else bad "install.sh exited $istatus"; fi
+case "$iout" in
+    *"resolve to the same directory"*) ok "install.sh recognises the same directory" ;;
+    *) bad "install.sh did not recognise the same directory" ;;
+esac
+if [ -f "$itmp/skills/latex-paper-toolchain/SKILL.md" ]; then ok "source tree intact"; else bad "source tree was moved or destroyed"; fi
+if [ -n "$(ls -d "$itmp/skills"/*.bak.* 2>/dev/null)" ]; then bad "install.sh created a .bak of the source"; else ok "no .bak of the source"; fi
+
+# A genuine install into a fresh location must still work, without .git.
+if "$REPO/scripts/install.sh" --dest "$itmp/target/skill" >/dev/null 2>&1; then
+    if [ -f "$itmp/target/skill/SKILL.md" ]; then ok "clean install copies SKILL.md"; else bad "clean install has no SKILL.md"; fi
+    if [ -d "$itmp/target/skill/.git" ]; then bad "clean install copied .git"; else ok "clean install drops .git"; fi
+else
+    bad "clean install failed"
+fi
+rm -rf "$itmp"
+
 section "repository hygiene"
 if git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1; then
     if git -C "$REPO" diff --check >/dev/null 2>&1; then ok "no whitespace errors (git diff --check)"; else bad "git diff --check reported whitespace errors"; fi

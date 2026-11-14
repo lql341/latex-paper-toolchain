@@ -52,14 +52,25 @@ else
     target="$HOME/.agents/skills/$SKILL_NAME"
 fi
 
+# Compare directories by canonical path, not by string: ~/.agents/skills is often a
+# symlink into a shared checkout, in which case the "destination" *is* the source and
+# moving it aside would destroy the repository being installed from.
+same_dir() { # same_dir <a> <b>
+    [ -e "$1" ] && [ -e "$2" ] || return 1
+    a=$(cd "$1" 2>/dev/null && pwd -P) || return 1
+    b=$(cd "$2" 2>/dev/null && pwd -P) || return 1
+    [ "$a" = "$b" ]
+}
+
 install_into() { # install_into <target-dir> <label>
     tgt=$1
     label=$2
     say "== $label"
     say "   $tgt"
 
-    if [ "$tgt" = "$SRC" ]; then
-        say "   source and destination are the same directory; nothing to do"
+    if same_dir "$tgt" "$SRC"; then
+        say "   source and destination resolve to the same directory; nothing to do"
+        say "   ($(cd "$SRC" && pwd -P))"
         return 0
     fi
 
@@ -67,7 +78,7 @@ install_into() { # install_into <target-dir> <label>
     mkdir -p "$parent"
 
     if [ -e "$tgt" ] || [ -L "$tgt" ]; then
-        if [ "$link" -eq 1 ] && [ -L "$tgt" ] && [ "$(readlink "$tgt")" = "$SRC" ]; then
+        if [ "$link" -eq 1 ] && [ -L "$tgt" ] && same_dir "$(readlink "$tgt")" "$SRC"; then
             say "   already linked correctly"
             return 0
         fi
