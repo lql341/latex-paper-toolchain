@@ -1,0 +1,7 @@
+interface:
+  display_name: "LaTeX Paper Toolchain"
+  short_description: "Minimal bilingual XeLaTeX toolchain, verified by a cold build"
+  default_prompt: "Use $latex-paper-toolchain to install, repair, or verify a XeLaTeX/CTeX toolchain for a Chinese/English paper."
+
+policy:
+  allow_implicit_invocation: true

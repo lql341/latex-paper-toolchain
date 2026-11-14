@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.2.0 - 2026-11-14
+
+The Debian/Ubuntu half stops being documentation and becomes an executable, testable procedure;
+the repository gains the layout that scnet-hpc already uses (agent manifest, release highlights,
+validate/release workflows, shared shell helpers, tests split by layer).
+
+- `scripts/fontconfig-isolate.sh` — `--check` / `--write` / `--remove` / `--dry-run` for the
+  user-level `rejectfont` rule that keeps the Arphic fonts pulled in by `texlive-lang-chinese` out
+  of the desktop fallback chain. Refreshes the cache after writing, prints the resulting
+  `fc-match` resolution, and reports `not-applicable` on macOS instead of pretending.
+- `scripts/install-debian.sh` — dry-run by default; `--apply` runs isolation rule → `apt-get update`
+  → `apt-get install --no-install-recommends <minimal set>`, then takes a before/after font manifest
+  and reports how the default CJK families resolve. Refuses to run off Debian/Ubuntu. Installs
+  `texlive-bibtex-extra` because `biblatex.sty` is only a Recommends elsewhere.
+- `scripts/install.sh` — installs the skill into `~/.agents/skills` (optionally also Claude Code and
+  Codex), copying by default or `--link` for development; backs up an existing installation with a
+  timestamp and strips `.git`/build products from the copy.
+- `scripts/_common.sh` — shared POSIX sh helpers (paths, logging, hashing/stat portability, font
+  directories, platform detection) sourced by every script; `LPT_OS_OVERRIDE` lets the test suite
+  exercise the Linux branch on a macOS host.
+- `agents/openai.yaml` — interface metadata for harnesses that read it.
+- `RELEASE_HIGHLIGHTS.md` / `_CN.md` and `.github/scripts/release_docs.py --check` — VERSION,
+  CHANGELOG, SKILL.md frontmatter and the release notes are validated against each other in CI.
+- Workflows mirror the repository contract: `validate.yml` (static, hermetic Debian tools, and a real
+  XeLaTeX build installed through `scripts/install-debian.sh --apply`) and `release.yml` (tag +
+  GitHub Release from the highlights, only for a validated `main`).
+- Tests split into `test-static.sh`, `test-debian-tools.sh`, `test-tex.sh`, orchestrated by
+  `run-all.sh`. New negative cases: a document with a dangling `\ref` must fail, and
+  `--expect-font` must fail for a font that is not embedded. `--help` is exercised for every script.
+
 ## 0.1.1 - 2026-11-14
 
 Two defects that only surfaced once the full suite ran on Linux, plus a released tag for the

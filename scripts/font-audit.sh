@@ -22,38 +22,9 @@
 # Exit codes: 0 unchanged, 1 changed (or usage error), 2 nothing to compare.
 set -eu
 
+# shellcheck source=scripts/_common.sh
+. "$(dirname "$0")/_common.sh"
 STORE=${FONT_AUDIT_DIR:-$HOME/.latex-font-audit}
-OS=$(uname -s)
-
-have() { command -v "$1" >/dev/null 2>&1; }
-
-sha256_of() { # sha256_of <file>
-    if have sha256sum; then sha256sum "$1" | awk '{print $1}'
-    elif have shasum; then shasum -a 256 "$1" | awk '{print $1}'
-    else cksum "$1" | awk '{print $1"-"$2}'
-    fi
-}
-
-file_size() { # file_size <file>
-    if [ "$OS" = Darwin ]; then stat -f '%z' "$1" 2>/dev/null || echo 0
-    else stat -c '%s' "$1" 2>/dev/null || echo 0
-    fi
-}
-
-file_mtime() { # file_mtime <file>
-    if [ "$OS" = Darwin ]; then stat -f '%m' "$1" 2>/dev/null || echo 0
-    else stat -c '%Y' "$1" 2>/dev/null || echo 0
-    fi
-}
-
-font_dirs() {
-    if [ "$OS" = Darwin ]; then
-        printf '%s\n' /System/Library/Fonts /Library/Fonts "$HOME/Library/Fonts"
-    else
-        printf '%s\n' /usr/share/fonts /usr/local/share/fonts \
-            "$HOME/.fonts" "$HOME/.local/share/fonts"
-    fi
-}
 
 cmd_save() { # cmd_save <label>
     label=$1

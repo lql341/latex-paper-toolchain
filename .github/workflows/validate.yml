@@ -1,0 +1,69 @@
+name: Validate skill
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell syntax, frontmatter, docs, privacy, hygiene, --help
+        run: bash tests/run-all.sh --static-only
+
+      - name: shellcheck
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck -x -s sh scripts/*.sh
+            shellcheck tests/*.sh
+          else
+            echo "shellcheck not installed; skipping"
+          fi
+
+      - name: Repository hygiene
+        run: |
+          git diff --check
+          if git grep -nE 'BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY|(^|[[:space:]])(export[[:space:]]+)?(API_KEY|ACCESS_KEY|SECRET_KEY|TOKEN|PASSWORD)[[:space:]]*=[[:space:]]*[^<[:space:]]+' -- ':!*.md' ':!.github/**'; then
+            echo "credential-looking content found; refusing" >&2
+            exit 1
+          fi
+
+  debian-tools:
+    name: Debian tools (hermetic)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fontconfig isolation cycle + installer dry-run
+        run: bash tests/test-debian-tools.sh
+
+  tex:
+    name: Real XeLaTeX build (installed by the skill itself)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install through scripts/install-debian.sh --apply
+        run: sudo bash scripts/install-debian.sh --apply
+
+      - name: doctor + cold build + font invariants + negative cases
+        run: bash tests/test-tex.sh
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tex-logs
+          path: |
+            /tmp/lpt-*.log
+            assets/example/main.log
+            assets/example/main.blg
+          if-no-files-found: ignore

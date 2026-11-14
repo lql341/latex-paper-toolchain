@@ -46,8 +46,9 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-HERE=$(cd "$(dirname "$0")" && pwd)
-REPO=$(cd "$HERE/.." && pwd)
+# shellcheck source=scripts/_common.sh
+. "$(dirname "$0")/_common.sh"
+REPO=$LPT_REPO
 [ -n "$FILE" ] || FILE=$REPO/assets/example/main.tex
 
 [ -f "$FILE" ] || { echo "cold-build.sh: no such file: $FILE" >&2; exit 2; }
@@ -60,15 +61,11 @@ trap 'rm -rf "$TMP"' EXIT INT TERM
 
 cd "$DIR"
 
-say() { printf '%s\n' "$*"; }
 fail=0
 
 # --- tool discovery ---------------------------------------------------------
-have() { command -v "$1" >/dev/null 2>&1; }
-
 if ! have xelatex; then
-    say "FATAL: xelatex not found on PATH (run scripts/doctor.sh)"
-    exit 1
+    die "xelatex not found on PATH (run scripts/doctor.sh)"
 fi
 
 # --- 1. cold clean ----------------------------------------------------------

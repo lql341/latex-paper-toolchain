@@ -10,6 +10,7 @@ not a general truth about LaTeX.
 |---|---|---|
 | **M1** | macOS 26.6.2, Apple Silicon (arm64), BasicTeX 2026.0301 / TeX Live 2026, CTeX 2.6.5, XeCJK 3.10.6, latexmk 4.88, Biber 2.22 | 2026-08-30, re-checked 2026-11-14 |
 | **D1** | Debian 13, XFCE desktop, Fontconfig, Chromium/Electron apps present, TeX Live from apt | 2026-08-30 |
+| **CI** | GitHub `ubuntu-26.04` runner, apt TeX Live 2025.20260124, `install-debian.sh --apply` | 2026-11-14 |
 
 ## Claims
 
@@ -37,7 +38,12 @@ not a general truth about LaTeX.
 | 19 | `\setCJKmainfont{FandolSong-Regular}` (family) fails on Ubuntu TeX Live; the `.otf` file name works | CI (ubuntu-latest, apt TeX Live) | verified 2026-11-14 | CI run 43609000774: "font not found" with the family name; file-name binding compiles |
 | 20 | `biblatex.sty` lives in `texlive-bibtex-extra`; `--no-install-recommends` omits it even though the example needs it | CI | verified 2026-11-14 | CI run 43609328438: `File 'biblatex.sty' not found` until the package was added |
 | 21 | ubuntu-latest + apt TeX Live builds `assets/example` cold, with Fandol embedded and no font-directory change | CI | verified 2026-11-14 | CI run 43609596146 green (doctor, cold-build, repeat build, font invariant) |
-| 22 | macOS and Linux reach the same verdict through the same scripts | M1, CI | verified per platform | 23/23 local checks on macOS, 23/23 in CI on Ubuntu |
+| 22 | macOS and Linux reach the same verdict through the same scripts | M1, CI | verified per platform | macOS: all test layers green; CI: `validate.yml` green |
+| 23 | `fontconfig-isolate.sh` write → check → remove cycle is hermetic and idempotent | M1 (override), CI | verified 2026-11-14 | `tests/test-debian-tools.sh`: absent → written (well-formed XML, targets arphic) → present → removed → absent; second `--remove` is a no-op |
+| 24 | Writing the isolation rule does not change the default CJK family resolution | M1 (override), CI | verified 2026-11-14 | `fc-match sans-serif:lang=zh-cn` identical before/after `--write` |
+| 25 | `install-debian.sh` is dry-run by default and its plan keeps `fonts-noto-cjk` out | CI | verified 2026-11-14 | `tests/test-debian-tools.sh` asserts the plan text; no package is installed by the test |
+| 26 | The minimal apt set installed by `install-debian.sh --apply` is sufficient to build `assets/example` | CI | verified in CI | `validate.yml` tex job installs through the script, then runs `test-tex.sh` |
+| 27 | A document with a dangling `\ref` fails `cold-build.sh` | M1 | verified 2026-11-14 | `test-tex.sh` builds a copy with the label removed and expects a non-zero exit |
 
 ## Not verified (do not claim)
 
@@ -54,6 +60,8 @@ not a general truth about LaTeX.
 | Fandol file names are identical across TeX Live versions | untested — only apt TeX Live on ubuntu-latest and the Fandol package contract |
 | Local macOS shell can reproduce the Debian font isolation | untested — cross-platform, not re-run |
 | The sandbox `codesign` result says anything about the host trust chain | explicitly rejected |
+| The Debian recovery sequence (§6) was re-run by the test suite | no — it is a recorded 2026-08-30 session, not an automated test |
+| `install-debian.sh --apply` is safe on an existing desktop with custom fonts | untested — only CI (no desktop) and the recorded session |
 
 ## How to extend this file
 

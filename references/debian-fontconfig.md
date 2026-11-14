@@ -4,6 +4,19 @@ Environment: Debian 13, XFCE, Fontconfig, Chromium/Electron applications present
 2026-08-30. The failure below is real and was reproduced: terminals and Electron apps changed
 Chinese glyph spacing after a TeX install, and logging out was not enough to recover.
 
+## The short path
+
+The procedure below is automated, in the order that matters:
+
+```bash
+scripts/fontconfig-isolate.sh --check    # is the isolation rule already in place?
+scripts/install-debian.sh                # dry-run: prints the exact plan
+sudo scripts/install-debian.sh --apply   # isolation rule -> apt -> font manifest
+```
+
+Read the rest of this file when something does not match: the manual steps, the recovery sequence
+and the limits of the evidence.
+
 ## Why this bites
 
 `texlive-lang-chinese` does not only ship macros. On Debian 13 it **depends on four
@@ -28,7 +41,9 @@ dpkg-query -W > ~/latex-install-audit/packages-before.txt
 
 ## 2. Isolate the Arphic fonts first
 
-Create `~/.config/fontconfig/conf.d/99-texlive-cjk-isolation.conf`:
+Automated: `scripts/fontconfig-isolate.sh --write` (and `--remove` to undo it, `--check` to ask).
+It resolves `${XDG_CONFIG_HOME:-$HOME/.config}/fontconfig/conf.d/` itself. The file it writes is
+this one, kept here so the rule can be reviewed or applied by hand:
 
 ```xml
 <?xml version="1.0"?>
@@ -47,9 +62,13 @@ This only stops desktop Fontconfig from enumerating those files. It does not del
 not affect TeX Live reading its own TEXMF fonts.
 
 Order matters: write the rule **before** `apt-get install`, so the cache rebuild that the package
-triggers already excludes them.
+triggers already excludes them. `install-debian.sh --apply` does exactly that, and refuses to run
+outside Debian/Ubuntu.
 
 ## 3. Install the minimal complete set
+
+Automated: `sudo scripts/install-debian.sh --apply` (add `--skip-isolate` on a machine with no
+desktop, `--no-audit` to skip the font manifest). The equivalent by hand:
 
 ```bash
 sudo apt-get update

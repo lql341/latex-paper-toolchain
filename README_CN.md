@@ -36,39 +36,63 @@ VERDICT: cold build verified (2 page(s), references resolved, fonts listed above
 
 | | macOS | Debian / Ubuntu 桌面 |
 |---|---|---|
-| 安装 | `brew install --cask basictex`（约 533 MB） | `apt-get install --no-install-recommends texlive-xetex texlive-lang-chinese …` |
+| 安装 | `brew install --cask basictex`（约 533 MB），再用 `tlmgr` 补包（见 reference） | `scripts/install-debian.sh` 先打印计划，`--apply` 才执行 |
 | 风险点 | 字体本身不动，但 `fontset=mac` 会探测 STFangsong 并触发 `mktextfm` | `texlive-lang-chinese` 依赖文鼎字体，触发 Fontconfig 重建 |
 | 对策 | `fontset=none` + 显式 Songti SC / Heiti SC | 安装**之前**先写用户级 `rejectfont` 规则 |
 | 中文来源 | macOS 原生字体 | TeX Live 自带 Fandol（在 TEXMF 内，桌面看不见） |
 
-两条路径最后收敛到同一套验证循环；脚本本身任何一步都不需要 root。
+两条路径最后收敛到同一套验证循环。Debian 安装脚本默认只打印计划，并且把顺序排成"先写字体隔离规则、
+再让 apt 重建缓存"；纯服务器（没有桌面）用 `--skip-isolate`。
 
 ## 目录
 
 ```text
-SKILL.md              agent 看的：决策、入口、硬规则
-scripts/              doctor.sh · cold-build.sh · font-audit.sh（POSIX sh，无 Python）
-assets/macos/         macos-native-fonts.tex —— ctex 文档可直接 \input
-assets/example/       main.tex + refs.bib —— 冒烟测试样稿，测试用例直接用它
-references/           macos-native-fonts.md · debian-fontconfig.md · troubleshooting.md · verified-matrix.md
-tests/run-all.sh      静态检查 + 真实 TeX 构建（没有 xelatex 时自动跳过）
+SKILL.md                        agent 看的：决策、入口、硬规则
+agents/openai.yaml              部分 harness 读取的界面元数据
+scripts/install.sh              装进 ~/.agents/skills（可 --claude / --codex / --link）
+scripts/install-debian.sh       Debian/Ubuntu：默认出计划，--apply 才执行
+scripts/fontconfig-isolate.sh   rejectfont 规则的 --check / --write / --remove
+scripts/doctor.sh               只读体检 + CJK 探针编译
+scripts/cold-build.sh           冷启动构建、日志断言、嵌入字体清单
+scripts/font-audit.sh           字体目录清单（save / diff / list / show）
+scripts/_common.sh              公共 POSIX sh 函数（被 source）
+assets/macos/                   macos-native-fonts.tex —— ctex 文档可直接 \input
+assets/example/                 main.tex + refs.bib —— 冒烟样稿，测试直接用它
+references/                     macos-native-fonts.md · debian-fontconfig.md · troubleshooting.md · verified-matrix.md
+tests/run-all.sh                依次跑下面三层
+tests/test-static.sh            语法、frontmatter、文档、隐私、卫生、--help
+tests/test-debian-tools.sh      字体隔离全流程（隔离式）+ 安装器计划
+tests/test-tex.sh               doctor、冷构建、字体不变式、反例
 ```
 
 ## 安装
 
 ```bash
-git clone https://github.com/lql341/latex-paper-toolchain ~/.agents/skills/latex-paper-toolchain
+git clone https://github.com/lql341/latex-paper-toolchain
+cd latex-paper-toolchain
+./scripts/install.sh                            # 复制到 ~/.agents/skills/<name>
+./scripts/install.sh --claude --codex --link    # 另链 Claude Code / Codex，改仓库即生效
 ```
 
-`~/.agents/skills/` 是 pi 与 Claude Code 共用的 Agent Skills 目录。Codex 是否扫描它因机器而异，
-不扫描的话把目录再链进 `~/.codex/skills/`。
+`~/.agents/skills/` 是 pi 与 Claude Code 共用的目录；Codex 是否扫描因机器而异，所以有 `--codex`。
+已存在的同名安装会先被移到 `<路径>.bak.<时间戳>`，不会静默覆盖。
+
+Debian/Ubuntu 侧：
+
+```bash
+sudo scripts/install-debian.sh --apply     # 不加 --apply 只打印计划
+scripts/doctor.sh && scripts/cold-build.sh --expect-font Fandol
+```
 
 ## 自检
 
 ```bash
-bash tests/run-all.sh                # 静态 + TeX 两层
-bash tests/run-all.sh --static-only  # 不需要 TeX，CI 默认
+bash tests/run-all.sh                 # 三层全跑
+bash tests/run-all.sh --static-only   # 不要 TeX、不要 apt
 ```
+
+反例也在测试里：故意留一个悬空 `\ref` 必须让构建检查失败，`--expect-font` 在字体没嵌入时必须失败。
+不会失败的验证脚本不算验证。
 
 ## 适用范围（别当成通用结论）
 

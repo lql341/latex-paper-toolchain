@@ -21,17 +21,12 @@ for arg in "$@"; do
     esac
 done
 
-say() { [ "$QUIET" -eq 1 ] || printf '%s\n' "$*"; }
-problem() { printf 'FAIL  %s\n' "$*"; }
-warn() { [ "$QUIET" -eq 1 ] || printf 'WARN  %s\n' "$*"; }
-ok() { [ "$QUIET" -eq 1 ] || printf 'ok    %s\n' "$*"; }
-
-have() { command -v "$1" >/dev/null 2>&1; }
-
-fail=0
+# shellcheck source=scripts/_common.sh
+. "$(dirname "$0")/_common.sh"
+LPT_QUIET=$QUIET
 
 # --- platform ---------------------------------------------------------------
-OS=$(uname -s)
+OS=$LPT_OS
 say "== platform"
 say "   $OS $(uname -r) $(uname -m)"
 if [ "$OS" = Darwin ]; then
@@ -47,7 +42,7 @@ RECOMMENDED="latexmk biber"
 OPTIONAL="pdffonts xdvipdfmx tlmgr"
 
 for b in $REQUIRED; do
-    if have "$b"; then ok "$b -> $(command -v "$b")"; else problem "$b not found on PATH"; fail=1; fi
+    if have "$b"; then ok "$b -> $(command -v "$b")"; else problem "$b not found on PATH"; fi
 done
 for b in $RECOMMENDED; do
     if have "$b"; then ok "$b -> $(command -v "$b")"; else warn "$b not found (needed for bibliography / multi-pass builds)"; fi
@@ -73,7 +68,6 @@ check_sty() { # check_sty <file.sty> <1 if required>
         case "$1" in
             biblatex.sty) [ "$OS" = Darwin ] || say "      (Debian/Ubuntu: apt install texlive-bibtex-extra)" ;;
         esac
-        fail=1
     else
         warn "$1 missing"
     fi
@@ -135,7 +129,6 @@ EOF
             say "      Debian/Ubuntu: sudo apt-get install --no-install-recommends texlive-lang-chinese"
             say "      (that package carries the Fandol .otf files used above)"
         fi
-        fail=1
     fi
 fi
 
@@ -159,8 +152,4 @@ if [ "$OS" = Darwin ]; then
 fi
 
 say ""
-if [ "$fail" -ne 0 ]; then
-    printf 'VERDICT: problems found (see FAIL lines above)\n'
-    exit 1
-fi
-printf 'VERDICT: required checks passed\n'
+verdict "required checks passed" || exit 1
