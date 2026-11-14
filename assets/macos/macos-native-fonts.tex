@@ -1,0 +1,46 @@
+% macOS native CJK fonts for ctex/xeCJK — verified on macOS 26.6.2 (Apple Silicon).
+%
+% Use with:
+%   \documentclass[UTF8,fontset=none]{ctexart}
+%   \input{path/to/macos-native-fonts}
+%
+% Why not [fontset=mac]: CTeX probes STFangsong and calls mktextfm when it is not
+% found, and PingFang SC is enumerated by the system font service but XeTeX cannot
+% reliably open it by family name. Do not copy system fonts into ~/Library/Fonts to
+% silence those warnings — pin the two families that XeTeX can actually open.
+
+\setCJKmainfont{Songti SC Regular}[
+  BoldFont      = Songti SC Bold,
+  AutoFakeSlant = 0.2
+]
+
+\setCJKsansfont{Heiti SC Light}[
+  BoldFont   = Heiti SC Medium
+]
+
+\setCJKmonofont{Heiti SC Light}[
+  BoldFont   = Heiti SC Medium
+]
+
+\setCJKfamilyfont{zhsong}{Songti SC Regular}[
+  BoldFont   = Songti SC Bold
+]
+
+\setCJKfamilyfont{zhhei}{Heiti SC Light}[
+  BoldFont   = Heiti SC Medium
+]
+
+% No stably accessible separate Kai/FangSong on this macOS build: fall back to
+% families that are known to work instead of registering new fonts.
+\setCJKfamilyfont{zhkai}{Songti SC Regular}[
+  BoldFont   = Songti SC Bold
+]
+
+\setCJKfamilyfont{zhfs}{Songti SC Light}[
+  BoldFont   = Songti SC Regular
+]
+
+\providecommand{\songti}{\CJKfamily{zhsong}}
+\providecommand{\heiti}{\CJKfamily{zhhei}}
+\providecommand{\kaishu}{\CJKfamily{zhkai}}
+\providecommand{\fangsong}{\CJKfamily{zhfs}}

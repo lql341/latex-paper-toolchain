@@ -1,0 +1,29 @@
+# LaTeX build products
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.xdv
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.pdf
+*.png
+*.xwm
+
+# Font audit snapshots (local machine state)
+font-audit/
+
+# Editor / OS
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/

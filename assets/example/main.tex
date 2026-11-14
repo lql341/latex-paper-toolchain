@@ -1,0 +1,112 @@
+% !TEX program = xelatex
+%
+% Bilingual smoke test for this skill. It deliberately exercises every check the
+% skill asks for: mixed CJK/Latin text, math, a plot, a table, code, cross
+% references, SI units, and a Biber bibliography.
+%
+% Compile with scripts/cold-build.sh (which cleans first and then verifies the
+% log and the embedded fonts), or by hand from this directory:
+%
+%   latexmk -C main.tex && rm -f main.bbl
+%   latexmk -xelatex -synctex=1 -interaction=nonstopmode -halt-on-error main.tex
+%
+\documentclass[UTF8,fontset=none,11pt]{ctexart}
+
+% --- Font binding: platform decision, not an accident -----------------------
+% macOS: pin the two native families XeTeX can open (see assets/macos/).
+% Elsewhere: TeX Live's Fandol fonts, which ship with texlive-lang-chinese and
+% never touch the desktop font stack.
+\usepackage{fontspec}
+\IfFontExistsTF{Songti SC Regular}
+  {\IfFileExists{../macos/macos-native-fonts.tex}
+     {\input{../macos/macos-native-fonts}}
+     {\setCJKmainfont{Songti SC Regular}}}
+  {\setCJKmainfont{FandolSong-Regular}[BoldFont=FandolSong-Bold]
+   \setCJKsansfont{FandolHei-Regular}[BoldFont=FandolHei-Bold]
+   \setCJKmonofont{FandolFang-Regular}}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{siunitx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage[backend=biber,style=numeric]{biblatex}
+\addbibresource{refs.bib}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+}
+
+\title{中英文排版冒烟测试\\[2pt]\large A Bilingual Typesetting Smoke Test}
+\author{Toolchain Verification}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{引言}\label{sec:intro}
+中英文混排要求 CJK 字体能够被 XeTeX 直接打开，而不是仅被系统字体服务枚举
+\cite{knuth1984,lamport1994}。本节同时验证交叉引用：公式见 \cref{eq:energy}，
+图表见 \cref{fig:profile,tab:params}，方法见 \cref{sec:method}。
+
+\section{方法与公式}\label{sec:method}
+一维线性对流方程的离散能量变化可写为
+\begin{equation}\label{eq:energy}
+  \frac{\mathrm{d}}{\mathrm{d}t}\int_{\Omega} \tfrac{1}{2} u^{2}\,\mathrm{d}x
+  = -\oint_{\partial\Omega} \tfrac{1}{2} u^{3} n_{x}\,\mathrm{d}s ,
+\end{equation}
+其中通量项的量级用国际单位表示约为 \qty{1.2}{\metre\per\second}，
+无量纲数取 \num{3.14e-2}。
+
+\section{图表与代码}\label{sec:results}
+\begin{table}[htbp]
+  \centering
+  \caption{参数取值 / Parameter values}\label{tab:params}
+  \begin{tabular}{lS[table-format=2.2]l}
+    \toprule
+    参数 & {数值} & 单位 \\
+    \midrule
+    CFL  & 0.45 & -- \\
+    $\Delta x$ & 0.01 & \si{\metre} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+        width=0.72\linewidth, height=5cm,
+        xlabel={$x$}, ylabel={$u(x)$},
+        legend style={font=\small},
+        grid=major,
+      ]
+      \addplot[thick, domain=0:1, samples=80] {sin(deg(pi*x))};
+      \addlegendentry{初始条件}
+      \addplot[thick, dashed, domain=0:1, samples=80] {sin(deg(pi*(x-0.2)))};
+      \addlegendentry{$t=0.2$}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{随时间平移的波形 / Advected profile}\label{fig:profile}
+\end{figure}
+
+\begin{lstlisting}[language=Python,caption={最小示例}]
+def advect(u, cfl):
+    return u - cfl * (u - np.roll(u, 1))
+\end{lstlisting}
+
+\section{结论}
+若 \cref{tab:params,fig:profile} 正常编号、\cref{eq:energy} 可点击跳转、
+参考文献 \cite{knuth1984,lamport1994} 正常解析，且构建日志中没有未定义引用与缺字，
+则这套工具链可用于真实论文。
+
+\printbibliography
+\end{document}

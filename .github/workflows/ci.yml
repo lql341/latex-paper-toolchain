@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  static:
+    name: static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: shell syntax, frontmatter, links, privacy, versioning
+        run: bash tests/run-all.sh --static-only
+
+      - name: shellcheck
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck -s sh scripts/*.sh
+            shellcheck tests/*.sh
+          else
+            echo "shellcheck not installed; skipping"
+          fi
+
+  tex:
+    name: real XeLaTeX build (Linux / Fandol)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install a minimal bilingual toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-xetex texlive-lang-chinese texlive-latex-extra \
+            texlive-science texlive-fonts-recommended latexmk biber
+
+      - name: doctor + cold build + font invariants
+        run: bash tests/run-all.sh
+
+      - name: upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tex-logs
+          path: |
+            /tmp/latex-toolchain-*.log
+            assets/example/main.log
+            assets/example/main.blg
+          if-no-files-found: ignore
