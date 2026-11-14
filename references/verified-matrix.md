@@ -36,7 +36,8 @@ not a general truth about LaTeX.
 
 | 19 | `\setCJKmainfont{FandolSong-Regular}` (family) fails on Ubuntu TeX Live; the `.otf` file name works | CI (ubuntu-latest, apt TeX Live) | verified 2026-11-14 | CI run 43609000774: "font not found" with the family name; file-name binding compiles |
 | 20 | `biblatex.sty` lives in `texlive-bibtex-extra`; `--no-install-recommends` omits it even though the example needs it | CI | verified 2026-11-14 | CI run 43609328438: `File 'biblatex.sty' not found` until the package was added |
-| 21 | CI's `tex` job (ubuntu-latest + apt TeX Live) builds `assets/example` with Fandol | CI | pending first run | workflow added 2026-11-14; result recorded by the badge, not by this table |
+| 21 | ubuntu-latest + apt TeX Live builds `assets/example` cold, with Fandol embedded and no font-directory change | CI | verified 2026-11-14 | CI run 43609596146 green (doctor, cold-build, repeat build, font invariant) |
+| 22 | macOS and Linux reach the same verdict through the same scripts | M1, CI | verified per platform | 23/23 local checks on macOS, 23/23 in CI on Ubuntu |
 
 ## Not verified (do not claim)
 
