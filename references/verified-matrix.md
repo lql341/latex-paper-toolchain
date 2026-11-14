@@ -39,11 +39,11 @@ not a general truth about LaTeX.
 | 20 | `biblatex.sty` lives in `texlive-bibtex-extra`; `--no-install-recommends` omits it even though the example needs it | CI | verified 2026-11-14 | CI run 43609328438: `File 'biblatex.sty' not found` until the package was added |
 | 21 | ubuntu-latest + apt TeX Live builds `assets/example` cold, with Fandol embedded and no font-directory change | CI | verified 2026-11-14 | CI run 43609596146 green (doctor, cold-build, repeat build, font invariant) |
 | 22 | macOS and Linux reach the same verdict through the same scripts | M1, CI | verified per platform | macOS: all test layers green; CI: `validate.yml` green |
-| 23 | `fontconfig-isolate.sh` write → check → remove cycle is hermetic and idempotent | M1 (override), CI | verified 2026-11-14 | `tests/test-debian-tools.sh`: absent → written (well-formed XML, targets arphic) → present → removed → absent; second `--remove` is a no-op |
-| 24 | Writing the isolation rule does not change the default CJK family resolution | M1 (override), CI | verified 2026-11-14 | `fc-match sans-serif:lang=zh-cn` identical before/after `--write` |
-| 25 | `install-debian.sh` is dry-run by default and its plan keeps `fonts-noto-cjk` out | CI | verified 2026-11-14 | `tests/test-debian-tools.sh` asserts the plan text; no package is installed by the test |
-| 26 | The minimal apt set installed by `install-debian.sh --apply` is sufficient to build `assets/example` | CI | verified in CI | `validate.yml` tex job installs through the script, then runs `test-tex.sh` |
-| 27 | A document with a dangling `\ref` fails `cold-build.sh` | M1 | verified 2026-11-14 | `test-tex.sh` builds a copy with the label removed and expects a non-zero exit |
+| 23 | `fontconfig-isolate.sh` write → check → remove cycle is hermetic and idempotent | M1 (override), CI | verified 2026-11-14 | `tests/test-debian-tools.sh`: absent → written (well-formed XML, targets arphic) → present → removed → absent; second `--remove` is a no-op. 24/24 in CI run 43611365668 |
+| 24 | Writing the isolation rule does not change the default sans resolution | M1 (override), CI | verified, narrow | `fc-match sans-serif:lang=zh-cn` identical before/after `--write`. On the CI runner this resolves to `DejaVu Sans` because no CJK font is installed there, so it proves the rule is inert for the default family — **not** that a real CJK fallback chain survived |
+| 25 | `install-debian.sh` is dry-run by default and its plan keeps `fonts-noto-cjk` out | CI | verified 2026-11-14 | 24/24 in CI run 43611365668; no package is installed by that test |
+| 26 | The minimal apt set installed by `install-debian.sh --apply` is sufficient to build `assets/example` | CI | verified 2026-11-14 | CI run 43611365668: the tex job installs through the script, then `test-tex.sh` passes |
+| 27 | A document with a dangling `\ref` fails `cold-build.sh` | M1, CI | verified 2026-11-14 | `test-tex.sh` builds a copy with the label removed and expects a non-zero exit (green locally and in CI 43611365668) |
 
 ## Not verified (do not claim)
 
