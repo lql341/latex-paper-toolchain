@@ -1,8 +1,9 @@
 # 发布要点 — latex-paper-toolchain
 
-- `scripts/install.sh` 不再破坏自己所在的仓库。它原先用字符串比较目标目录与源目录；当
-  `~/.agents/skills` 是指向同一个仓库的软链时，两者是同一目录的两个名字，脚本会把仓库当成
-  "已有安装"移走备份，随后从一个已不存在的路径复制而失败。现在两侧都用 `pwd -P` 归一化。
-- 对已存在的软链安装重复执行 `install.sh --link` 现在是空操作，而不是重新链接。
-- 静态测试层覆盖两种安装布局：软链 skills 根目录（源仓库完好、不产生源的 `.bak`）与真正装到
-  新目录（SKILL.md 存在、`.git` 被剥掉）。
+- 技能名是身份，不是目录名。`release_docs.py` 与 `test-static.sh` 现在拿 `SKILL.md` 里的 `name`
+  和 `latex-paper-toolchain` 比较，而不是和检出目录比较；fork、CI 工作区或
+  `git clone <url> my-copy` 不会因为目录名不同而校验失败。
+- `install.sh` 从 frontmatter 读取技能名，所以换个名字的检出目录依然装成 `latex-paper-toolchain`，
+  而不是装成本地目录名。
+- `--dest DIR` 现在是"skills 根目录"：技能落在 `DIR/<技能名>`，安装路径不再取决于脚本怎么被调用。
+- 这两条行为都纳入了静态测试层。

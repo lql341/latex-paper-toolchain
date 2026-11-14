@@ -17,6 +17,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$")
+# The skill name is an identity, not a path: a checkout may live in any directory
+# (`git clone <url> some-dir`, a CI workspace, a fork). Compare against this constant
+# instead of REPO.name, and only note a directory mismatch.
+EXPECTED_NAME = "latex-paper-toolchain"
 
 
 def read(path: Path) -> str:
@@ -81,9 +85,9 @@ def check() -> list[str]:
         description = re.search(r"^description:\s*(.+)$", text, flags=re.MULTILINE)
         if not name:
             problems.append("SKILL.md frontmatter has no name")
-        elif name.group(1).strip() != REPO.name:
+        elif name.group(1).strip() != EXPECTED_NAME:
             problems.append(
-                f"SKILL.md name '{name.group(1).strip()}' != repository directory '{REPO.name}'"
+                f"SKILL.md name '{name.group(1).strip()}' != '{EXPECTED_NAME}'"
             )
         if not description:
             problems.append("SKILL.md frontmatter has no description")
@@ -119,6 +123,12 @@ def main() -> int:
             print(f"  - {problem}", file=sys.stderr)
         return 1
 
+    if REPO.name != EXPECTED_NAME:
+        print(
+            f"note: checkout directory is '{REPO.name}', skill name is '{EXPECTED_NAME}' "
+            "(allowed; install it under the skill name)",
+            file=sys.stderr,
+        )
     print(f"release documents consistent (version {read(REPO / 'VERSION').strip()})")
     return 0
 

@@ -48,7 +48,13 @@ if [ -f "$skill" ]; then
     if [ "$(head -n 1 "$skill")" = "---" ]; then ok "opens with ---"; else bad "does not open with ---"; fi
     name=$(sed -n '1,40p' "$skill" | sed -n 's/^name: *//p' | head -n 1)
     desc=$(sed -n '1,40p' "$skill" | sed -n 's/^description: *//p' | head -n 1)
-    if [ "$name" = "$(basename "$REPO")" ]; then ok "name matches directory ($name)"; else bad "name '$name' != directory '$(basename "$REPO")'"; fi
+    expected=latex-paper-toolchain
+    if [ "$name" = "$expected" ]; then
+        ok "name is the expected skill identity ($name)"
+        [ "$(basename "$REPO")" = "$expected" ] || note "checkout directory is '$(basename "$REPO")'; the skill name is still '$expected'"
+    else
+        bad "name '$name' != '$expected'"
+    fi
     if [ -n "$desc" ]; then
         ok "description present ($(printf '%s' "$desc" | wc -c | tr -d ' ') chars)"
         [ "$(printf '%s' "$desc" | wc -c)" -le 1024 ] || bad "description exceeds 1024 chars"
@@ -130,13 +136,26 @@ if [ -f "$itmp/skills/latex-paper-toolchain/SKILL.md" ]; then ok "source tree in
 if [ -n "$(ls -d "$itmp/skills"/*.bak.* 2>/dev/null)" ]; then bad "install.sh created a .bak of the source"; else ok "no .bak of the source"; fi
 
 # A genuine install into a fresh location must still work, without .git.
-if "$REPO/scripts/install.sh" --dest "$itmp/target/skill" >/dev/null 2>&1; then
-    if [ -f "$itmp/target/skill/SKILL.md" ]; then ok "clean install copies SKILL.md"; else bad "clean install has no SKILL.md"; fi
-    if [ -d "$itmp/target/skill/.git" ]; then bad "clean install copied .git"; else ok "clean install drops .git"; fi
+if "$REPO/scripts/install.sh" --dest "$itmp/target" >/dev/null 2>&1; then
+    if [ -f "$itmp/target/latex-paper-toolchain/SKILL.md" ]; then ok "clean install copies SKILL.md"; else bad "clean install has no SKILL.md"; fi
+    if [ -d "$itmp/target/latex-paper-toolchain/.git" ]; then bad "clean install copied .git"; else ok "clean install drops .git"; fi
 else
     bad "clean install failed"
 fi
 rm -rf "$itmp"
+
+section "install.sh uses the skill name, not the checkout directory"
+itmp2=$(mktemp -d)
+cp -R "$REPO" "$itmp2/Some-Different-Checkout-Name"
+rm -rf "$itmp2/Some-Different-Checkout-Name/.git"
+HOME="$itmp2/home" bash "$itmp2/Some-Different-Checkout-Name/scripts/install.sh" --dest "$itmp2/target" >/dev/null 2>&1
+if [ -f "$itmp2/target/latex-paper-toolchain/SKILL.md" ]; then
+    ok "installed under the skill name, not the directory name"
+else
+    bad "install used the checkout directory name instead of the skill name"
+    find "$itmp2/target" -maxdepth 2 -mindepth 1 2>/dev/null | sed 's/^/         /'
+fi
+rm -rf "$itmp2"
 
 section "repository hygiene"
 if git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1; then

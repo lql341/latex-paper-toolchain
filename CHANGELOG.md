@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.2 - 2026-11-14
+
+Found by cloning the published repository into a directory with a different name and running the
+suite there — the same thing a fork, a CI workspace, or `git clone <url> my-copy` produces.
+
+- The skill name is treated as an identity, not a path: `release_docs.py` and `test-static.sh`
+  compare `SKILL.md`'s `name` against `latex-paper-toolchain` instead of the checkout directory,
+  and a differing directory is a note rather than a failure.
+- `install.sh` now reads the skill name from the frontmatter instead of using the directory it was
+  cloned into, so a differently named checkout still installs as `latex-paper-toolchain`.
+- `--dest DIR` is documented and implemented as a *skills root*: the skill is installed at
+  `DIR/<skill-name>`. Previously it was used verbatim as the final directory, which made the
+  installed path depend on how you invoked the script.
+- `tests/test-static.sh` covers both: a differently named checkout installs under the skill name,
+  and a plain `--dest` install produces `<dest>/latex-paper-toolchain/SKILL.md` without `.git`.
+
 ## 0.2.1 - 2026-11-14
 
 Fixes a destructive path in `scripts/install.sh`, found by asking it to install onto a machine

@@ -6,7 +6,7 @@
 #   ./scripts/install.sh --claude         # also link ~/.claude/skills/<name>
 #   ./scripts/install.sh --codex          # also link ~/.codex/skills/<name>
 #   ./scripts/install.sh --link           # symlink instead of copying (edit = live)
-#   ./scripts/install.sh --dest DIR       # explicit destination
+#   ./scripts/install.sh --dest DIR       # explicit skills root: installs DIR/<skill-name>
 #
 # ~/.agents/skills is the shared location read by pi and Claude Code. Codex scans it
 # on some machines only, hence the optional per-harness links. Existing installations
@@ -19,8 +19,13 @@ set -eu
 # shellcheck source=scripts/_common.sh
 . "$(dirname "$0")/_common.sh"
 
-SKILL_NAME=$(basename "$LPT_REPO")
 SRC=$LPT_REPO
+
+# The skill name comes from the frontmatter, not from the directory the checkout
+# happens to live in: `git clone <url> my-copy` must still install as the skill's
+# own name, or the harness shows it under the wrong path.
+SKILL_NAME=$(sed -n '1,40p' "$SRC/SKILL.md" 2>/dev/null | sed -n 's/^name: *//p' | head -n 1)
+[ -n "$SKILL_NAME" ] || SKILL_NAME=$(basename "$LPT_REPO")
 mode="user"
 link=0
 dest=""
@@ -45,7 +50,8 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -n "$dest" ]; then
-    target=$dest
+    # --dest is a skills root, not the final directory: the skill keeps its own name.
+    target="$dest/$SKILL_NAME"
 elif [ "$mode" = "project" ]; then
     target="$PWD/.agents/skills/$SKILL_NAME"
 else
